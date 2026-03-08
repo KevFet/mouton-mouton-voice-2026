@@ -24,6 +24,8 @@ export default function App() {
   const [remoteValidation, setRemoteValidation] = useState<'match' | 'fail' | null>(null);
   const [localValidation, setLocalValidation] = useState<'match' | 'fail' | null>(null);
 
+  const [remoteNextEvent, setRemoteNextEvent] = useState<{ action: 'secure' | 'continue', newTheme: string } | null>(null);
+
   useEffect(() => {
     if (!room) return;
 
@@ -50,7 +52,7 @@ export default function App() {
         setRemoteValidation(payload.payload.result);
       })
       .on('broadcast', { event: 'next' }, (payload) => {
-        handleNextState(payload.payload.action, payload.payload.newTheme);
+        setRemoteNextEvent({ action: payload.payload.action, newTheme: payload.payload.newTheme });
       })
       .on('broadcast', { event: 'start_game' }, () => {
         setView('game');
@@ -66,7 +68,14 @@ export default function App() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [room, currentUsername, view]);
+  }, [room, currentUsername]);
+
+  useEffect(() => {
+    if (remoteNextEvent) {
+      handleNextState(remoteNextEvent.action, remoteNextEvent.newTheme);
+      setRemoteNextEvent(null);
+    }
+  }, [remoteNextEvent]);
 
   useEffect(() => {
     // If both ready, start countdown
