@@ -42,9 +42,6 @@ export default function App() {
           };
         });
         setPlayers(activePlayers);
-        if (activePlayers.length === 2 && view === 'lobby') {
-          setTimeout(() => setView('game'), 2000);
-        }
       })
       .on('broadcast', { event: 'ready' }, () => {
         setRemoteReady(true);
@@ -54,6 +51,9 @@ export default function App() {
       })
       .on('broadcast', { event: 'next' }, (payload) => {
         handleNextState(payload.payload.action, payload.payload.newTheme);
+      })
+      .on('broadcast', { event: 'start_game' }, () => {
+        setView('game');
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
@@ -163,6 +163,15 @@ export default function App() {
     setRemoteReady(false);
   };
 
+  const handleStartGame = () => {
+    setView('game');
+    channelRef.current?.send({
+      type: 'broadcast',
+      event: 'start_game',
+      payload: {},
+    });
+  };
+
   return (
     <>
       <div className="mesh-bg" />
@@ -172,6 +181,7 @@ export default function App() {
           onJoinRoom={handleJoin}
           players={players}
           currentUsername={currentUsername}
+          onStartGame={handleStartGame}
         />
       ) : (
         <Game

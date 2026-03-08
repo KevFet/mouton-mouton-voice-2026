@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, LogIn } from 'lucide-react';
+import { Users, LogIn, PlayCircle } from 'lucide-react';
 
 interface LobbyProps {
     onJoinRoom: (username: string, roomCode: string) => void;
     players: { id: string; username: string }[];
     currentUsername: string;
+    onStartGame: () => void;
 }
 
-export default function Lobby({ onJoinRoom, players, currentUsername }: LobbyProps) {
+export default function Lobby({ onJoinRoom, players, currentUsername, onStartGame }: LobbyProps) {
     const [name, setName] = useState('');
     const [room, setRoom] = useState('');
 
@@ -93,13 +94,16 @@ export default function Lobby({ onJoinRoom, players, currentUsername }: LobbyPro
                         </div>
 
                         {players.length === 2 && (
-                            <motion.div
+                            <motion.button
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="text-center text-teal-300 font-medium tracking-widest uppercase text-sm mt-8 animate-pulse"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={onStartGame}
+                                className="w-full h-16 mt-8 bg-gradient-to-r from-teal-400 to-indigo-500 text-white font-black uppercase tracking-widest rounded-2xl shadow-[0_0_40px_rgba(20,184,166,0.3)] flex items-center justify-center gap-3"
                             >
-                                Prêts à jouer !
-                            </motion.div>
+                                <PlayCircle className="w-6 h-6" /> DÉMARRER LA PARTIE
+                            </motion.button>
                         )}
                         {players.length < 2 && currentUsername && (
                             <motion.div
