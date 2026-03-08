@@ -39,9 +39,18 @@ export default function Lobby({ onJoinRoom, teams, currentUsername, onStartGame,
                 <h1 className="text-4xl md:text-5xl font-extrabold tracking-tighter mb-2 text-center bg-clip-text text-transparent bg-gradient-to-br from-white to-white/50">
                     {t.title}
                 </h1>
-                <p className="text-white/50 text-sm font-medium tracking-widest uppercase mb-12">
+                <p className="text-white/50 text-sm font-medium tracking-widest uppercase mb-8">
                     {t.subtitle}
                 </p>
+
+                <div className="bg-white/5 border border-white/10 p-6 rounded-2xl w-full mb-8 text-center backdrop-blur-md">
+                    <h3 className="text-teal-300 font-bold uppercase tracking-widest text-xs mb-3 flex items-center justify-center gap-2">
+                        {t.rulesTitle}
+                    </h3>
+                    <p className="text-white/70 text-sm font-medium whitespace-pre-wrap leading-relaxed text-left">
+                        {t.rulesText}
+                    </p>
+                </div>
 
                 {!currentUsername ? (
                     <form onSubmit={handleJoin} className="w-full flex-col flex gap-4">
