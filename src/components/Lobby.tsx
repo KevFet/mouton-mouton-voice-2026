@@ -7,8 +7,8 @@ interface LobbyProps {
     teams: { id: string; username: string }[];
     currentUsername: string;
     onStartGame: () => void;
-    lang: 'en' | 'es';
-    setLang: (l: 'en' | 'es') => void;
+    lang: 'en' | 'es' | 'fr';
+    setLang: (l: 'en' | 'es' | 'fr') => void;
     t: any;
 }
 
@@ -28,6 +28,7 @@ export default function Lobby({ onJoinRoom, teams, currentUsername, onStartGame,
             <div className="absolute top-6 right-6 flex items-center glass rounded-full p-2 gap-2 shadow-[0_0_20px_rgba(255,255,255,0.05)] border border-white/20">
                 <button onClick={() => setLang('en')} className={`w-10 h-10 rounded-full font-bold text-sm tracking-widest flex items-center justify-center transition-colors ${lang === 'en' ? 'bg-white text-black' : 'text-white hover:bg-white/10'}`}>EN</button>
                 <button onClick={() => setLang('es')} className={`w-10 h-10 rounded-full font-bold text-sm tracking-widest flex items-center justify-center transition-colors ${lang === 'es' ? 'bg-white text-black' : 'text-white hover:bg-white/10'}`}>ES</button>
+                <button onClick={() => setLang('fr')} className={`w-10 h-10 rounded-full font-bold text-sm tracking-widest flex items-center justify-center transition-colors ${lang === 'fr' ? 'bg-white text-black' : 'text-white hover:bg-white/10'}`}>FR</button>
             </div>
 
             <motion.div

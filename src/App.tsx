@@ -68,6 +68,37 @@ const translations = {
     tempScore: "Racha",
     you: "Tú",
     them: "Ellos"
+  },
+  fr: {
+    title: "MÊME PAGE",
+    subtitle: "Synchronisez vos esprits",
+    teamName: "Nom de l'Équipe",
+    roomCode: "Code de Salle",
+    join: "REJOINDRE",
+    currentRoom: "Salle Actuelle",
+    waiting: "En attente de l'autre équipe...",
+    readyToPlay: "Prêts à jouer !",
+    startGame: "DÉMARRER",
+    readerWait: "En attente de l'autre équipe...",
+    yourTurn: "ÉQUIPE QUI DEVINE",
+    readerTurn: "ÉQUIPE QUI LIT",
+    listen: "Écoutez l'autre équipe et criez le même mot tous ensemble !",
+    readThis: "LISEZ CECI À VOIX HAUTE :",
+    matchBtn: "ILS L'ONT EU !",
+    failBtn: "ILS ONT RATÉ",
+    waitingDecision: "Ils l'ont eu ! En attente de leur décision...",
+    youMatched: "MATCH !",
+    secure: "SÉCURISER",
+    continue: "CONTINUER",
+    turnOver: "TOUR TERMINÉ",
+    rolesSwitched: "Les rôles ont été inversés.",
+    activeTeamLabel: "QUI DEVINE",
+    nextTurnLabel: "PROCHAINS À DEVINER",
+    startTurnBtn: "TIRER UN THÈME",
+    score: "Score",
+    tempScore: "Série",
+    you: "Vous",
+    them: "Eux"
   }
 }
 
@@ -77,7 +108,7 @@ export default function App() {
   const [room, setRoom] = useState('');
   const [currentUsername, setCurrentUsername] = useState('');
 
-  const [lang, setLang] = useState<'en' | 'es'>('en');
+  const [lang, setLang] = useState<'en' | 'es' | 'fr'>('en');
   const t = translations[lang];
 
   const [gameState, setGameState] = useState<GameState>('lobby');
@@ -149,7 +180,7 @@ export default function App() {
     }
   };
 
-  const getRandomTheme = (currentLang: 'en' | 'es') => {
+  const getRandomTheme = (currentLang: 'en' | 'es' | 'fr') => {
     const list = prompts[currentLang];
     return list[Math.floor(Math.random() * list.length)];
   };
@@ -196,7 +227,7 @@ export default function App() {
     setRoom(rCode);
   };
 
-  const handleSetLang = (newLang: 'en' | 'es') => {
+  const handleSetLang = (newLang: 'en' | 'es' | 'fr') => {
     setLang(newLang);
     channelRef.current?.send({
       type: 'broadcast',
