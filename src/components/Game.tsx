@@ -1,16 +1,17 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, XOctagon, CheckCircle2, ShieldCheck, ArrowRight, Play, RefreshCw, Eye } from 'lucide-react';
+import { XOctagon, CheckCircle2, ArrowRight, Play, RefreshCw, Eye } from 'lucide-react';
 
 interface GameProps {
     theme: string;
-    gameState: 'ready' | 'playing' | 'decision' | 'turn_over';
+    gameState: 'ready' | 'playing' | 'word_result' | 'turn_over';
     role: 'reader' | 'guesser';
     scores: Record<string, number>;
-    tempScore: number;
+    turnWordIndex: number;
+    lastResult: 'match' | 'fail' | null;
     teams: { id: string; username: string }[];
     activeTeamId: string;
     myTeamId: string;
-    onAction: (action: 'start_turn' | 'match' | 'fail' | 'secure' | 'continue', payload?: any) => void;
+    onAction: (action: 'start_turn' | 'match' | 'fail' | 'next_word', payload?: any) => void;
     t: any;
 }
 
@@ -19,7 +20,8 @@ export default function Game({
     gameState,
     role,
     scores,
-    tempScore,
+    turnWordIndex,
+    lastResult,
     teams,
     activeTeamId,
     myTeamId,
@@ -32,6 +34,8 @@ export default function Game({
     const otherTeamId = teams.find(team => team.id !== myTeamId)?.id || '';
     const otherScore = scores[otherTeamId] || 0;
 
+    const levelLabel = turnWordIndex === 0 ? t.level0 : turnWordIndex === 1 ? t.level1 : t.level2;
+
     return (
         <div className="w-full flex-1 flex flex-col items-center justify-between z-10 p-6 mx-auto relative h-[100dvh]">
 
@@ -41,9 +45,9 @@ export default function Game({
                     <span className="text-[10px] font-bold tracking-widest uppercase text-white/50">{t.you} ({myScore})</span>
                 </div>
                 <div className="flex flex-col items-center w-1/3">
-                    <span className="text-[10px] font-bold tracking-widest uppercase text-teal-300">{t.tempScore}</span>
-                    <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-teal-300 to-teal-500">
-                        {tempScore}
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-teal-300">{gameState === 'ready' || gameState === 'turn_over' ? '' : levelLabel}</span>
+                    <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-teal-300 to-indigo-400">
+                        {gameState === 'ready' || gameState === 'turn_over' ? '-' : `${turnWordIndex + 1}/3`}
                     </span>
                 </div>
                 <div className="flex flex-col items-end w-1/3">
@@ -125,7 +129,7 @@ export default function Game({
                             ) : (
                                 <>
                                     <div className="w-48 h-48 rounded-full border-[10px] border-white/5 border-t-teal-400 animate-spin mb-12 shadow-[0_0_50px_rgba(20,184,166,0.3)]"></div>
-                                    <h3 className="text-2xl font-black text-white text-center tracking-widest uppercase leading-loose text-shadow-lg">
+                                    <h3 className="text-2xl font-black text-white text-center tracking-widest uppercase leading-loose text-shadow-lg p-6">
                                         {t.listen}
                                     </h3>
                                 </>
@@ -133,47 +137,39 @@ export default function Game({
                         </motion.div>
                     )}
 
-                    {gameState === 'decision' && (
+                    {gameState === 'word_result' && (
                         <motion.div
-                            key="decision"
+                            key="word_result"
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
                             className="w-full flex flex-col items-center"
                         >
-                            {role === 'reader' ? (
-                                <div className="text-center">
-                                    <Sparkles className="w-20 h-20 text-teal-400 drop-shadow-[0_0_40px_rgba(45,212,191,0.8)] mb-8 mx-auto" />
-                                    <h3 className="text-3xl font-black text-white mb-4 tracking-widest uppercase">{t.youMatched}</h3>
-                                    <p className="text-white/50 uppercase tracking-widest text-sm loading-dots">{t.waitingDecision}</p>
-                                </div>
-                            ) : (
-                                <>
-                                    <motion.div initial={{ scale: 0 }} animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 0.4 }}>
-                                        <Sparkles className="w-24 h-24 text-teal-400 drop-shadow-[0_0_40px_rgba(45,212,191,0.8)] mb-8" />
-                                    </motion.div>
-                                    <h3 className="text-4xl font-black text-white mb-2 tracking-widest uppercase">{t.youMatched}</h3>
-                                    <p className="text-teal-300 mb-12 font-bold uppercase tracking-widest">+100 pts</p>
+                            <motion.div initial={{ scale: 0 }} animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 0.4 }}>
+                                {lastResult === 'match' ? (
+                                    <CheckCircle2 className="w-24 h-24 text-teal-400 drop-shadow-[0_0_40px_rgba(45,212,191,0.8)] mb-8" />
+                                ) : (
+                                    <XOctagon className="w-24 h-24 text-red-400 drop-shadow-[0_0_40px_rgba(239,68,68,0.8)] mb-8" />
+                                )}
+                            </motion.div>
+                            <h3 className={`text-4xl font-black mb-8 tracking-widest uppercase ${lastResult === 'match' ? 'text-teal-300' : 'text-red-300'}`}>
+                                {lastResult === 'match' ? t.wordMatched : t.wordFailed}
+                            </h3>
 
-                                    <div className="w-full flex gap-4">
-                                        <motion.button
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={() => onAction('secure')}
-                                            className="flex-1 h-24 rounded-2xl glass backdrop-blur-md border border-indigo-400/50 text-indigo-200 font-bold uppercase tracking-wider text-sm flex flex-col items-center justify-center shadow-[0_0_30px_rgba(99,102,241,0.2)]"
-                                        >
-                                            <ShieldCheck className="w-8 h-8 mb-2 text-indigo-300" />
-                                            {t.secure}
-                                        </motion.button>
-                                        <motion.button
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={() => onAction('continue')}
-                                            className="flex-1 h-24 rounded-2xl bg-teal-500/20 backdrop-blur-md border-2 border-teal-400 text-teal-100 font-bold uppercase tracking-wider text-sm flex flex-col items-center justify-center shadow-[0_0_40px_rgba(20,184,166,0.3)]"
-                                        >
-                                            <ArrowRight className="w-8 h-8 mb-2 text-teal-300" />
-                                            {t.continue}
-                                        </motion.button>
-                                    </div>
-                                </>
+                            {role === 'reader' ? (
+                                <motion.button
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => onAction('next_word')}
+                                    className="w-full h-20 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-indigo-600/10 backdrop-blur-md border border-indigo-400/50 text-indigo-100 font-bold uppercase tracking-widest text-lg flex items-center justify-center gap-3 shadow-[0_0_40px_rgba(99,102,241,0.3)]"
+                                >
+                                    {turnWordIndex < 2 ? t.nextWord : t.finishTurn}
+                                    <ArrowRight className="w-6 h-6 text-indigo-300" />
+                                </motion.button>
+                            ) : (
+                                <div className="text-white/50 uppercase tracking-widest text-sm loading-dots flex flex-col items-center gap-4 mt-8">
+                                    <Eye className="w-8 h-8 opacity-50" />
+                                    {t.readerWait}
+                                </div>
                             )}
                         </motion.div>
                     )}
@@ -188,7 +184,7 @@ export default function Game({
                             <h3 className="text-4xl font-black text-white tracking-widest uppercase mb-4 text-center">{t.turnOver}</h3>
                             <p className="text-white/60 mb-12 uppercase tracking-widest text-center text-sm leading-loose">
                                 {t.rolesSwitched}<br />
-                                <span className="text-teal-400 font-bold mt-4 block text-lg">{t.nextTurnLabel}: {activeTeamName}</span>
+                                <span className="text-indigo-400 font-bold mt-4 block text-lg">{t.nextTurnLabel}: {activeTeamName}</span>
                             </p>
 
                             {role === 'reader' ? (

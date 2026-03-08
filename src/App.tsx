@@ -4,7 +4,7 @@ import Game from './components/Game';
 import { supabase } from './lib/supabase';
 import { prompts } from './data/prompts';
 
-type GameState = 'lobby' | 'ready' | 'playing' | 'decision' | 'turn_over';
+type GameState = 'lobby' | 'ready' | 'playing' | 'word_result' | 'turn_over';
 
 const translations = {
   en: {
@@ -17,6 +17,8 @@ const translations = {
     waiting: "Waiting for other team...",
     readyToPlay: "Ready to play!",
     startGame: "START GAME",
+    rulesTitle: "HOW TO PLAY",
+    rulesText: "1. The Reading Team sees a theme.\n2. The Guessing Team listens and shouts ONE word together.\n3. If they say the exact same word, it's a MATCH (+1 pt).\n4. 3 words per turn: Easy, Medium, Hard.\n5. Then teams switch roles!",
     readerWait: "Waiting for the other team...",
     yourTurn: "GUESSING TEAM",
     readerTurn: "READING TEAM",
@@ -24,17 +26,19 @@ const translations = {
     readThis: "READ THIS LOUDLY:",
     matchBtn: "THEY MATCHED!",
     failBtn: "THEY FAILED",
-    waitingDecision: "They matched! Waiting for their decision...",
-    youMatched: "MATCH!",
-    secure: "SECURE POINTS",
-    continue: "KEEP GOING",
+    wordMatched: "MATCH! +1 PT",
+    wordFailed: "FAILED",
+    nextWord: "NEXT WORD",
+    finishTurn: "FINISH TURN",
+    level0: "EASY",
+    level1: "MEDIUM",
+    level2: "HARD",
     turnOver: "TURN FINISHED",
     rolesSwitched: "Roles have switched.",
     activeTeamLabel: "GUESSING",
     nextTurnLabel: "NEXT TO GUESS",
     startTurnBtn: "DRAW THEME",
     score: "Score",
-    tempScore: "Streak",
     you: "You",
     them: "Them"
   },
@@ -48,6 +52,8 @@ const translations = {
     waiting: "Esperando al otro equipo...",
     readyToPlay: "¡Listos para jugar!",
     startGame: "COMENZAR PARTIDA",
+    rulesTitle: "CÓMO JUGAR",
+    rulesText: "1. El Equipo Lector ve un tema.\n2. El Equipo Adivinador escucha y grita UN palabra al mismo tiempo.\n3. Si dicen lo mismo, ¡COINCIDENCIA! (+1 pt).\n4. 3 temas por turno: Fácil, Medio, Difícil.\n5. ¡Luego cambian de roles!",
     readerWait: "Esperando al otro equipo...",
     yourTurn: "EQUIPO ADIVINADOR",
     readerTurn: "EQUIPO LECTOR",
@@ -55,17 +61,19 @@ const translations = {
     readThis: "LEE ESTO EN VOZ ALTA:",
     matchBtn: "¡COINCIDIERON!",
     failBtn: "FALLARON",
-    waitingDecision: "¡Coincidieron! Esperando su decisión...",
-    youMatched: "¡COINCIDENCIA!",
-    secure: "ASEGURAR PUNTOS",
-    continue: "CONTINUAR",
+    wordMatched: "¡COINCIDENCIA! +1 PT",
+    wordFailed: "FALLARON",
+    nextWord: "SIGUIENTE",
+    finishTurn: "TERMINAR TURNO",
+    level0: "FÁCIL",
+    level1: "MEDIO",
+    level2: "DIFÍCIL",
     turnOver: "FIN DEL TURNO",
     rolesSwitched: "Se han cambiado los roles.",
     activeTeamLabel: "ADIVINANDO",
     nextTurnLabel: "SIGUIENTES EN ADIVINAR",
     startTurnBtn: "SACAR TEMA",
     score: "Puntos",
-    tempScore: "Racha",
     you: "Tú",
     them: "Ellos"
   },
@@ -79,6 +87,8 @@ const translations = {
     waiting: "En attente de l'autre équipe...",
     readyToPlay: "Prêts à jouer !",
     startGame: "DÉMARRER",
+    rulesTitle: "RÈGLES DU JEU",
+    rulesText: "1. L'Équipe qui Lit annonce le thème.\n2. L'Équipe qui Devine écoute et crie UN SEUL mot ensemble.\n3. S'ils disent le même mot : MATCH (+1 pt).\n4. 3 mots par tour : Facile, Moyen, Difficile.\n5. Ensuite, les rôles s'inversent !",
     readerWait: "En attente de l'autre équipe...",
     yourTurn: "ÉQUIPE QUI DEVINE",
     readerTurn: "ÉQUIPE QUI LIT",
@@ -86,17 +96,19 @@ const translations = {
     readThis: "LISEZ CECI À VOIX HAUTE :",
     matchBtn: "ILS L'ONT EU !",
     failBtn: "ILS ONT RATÉ",
-    waitingDecision: "Ils l'ont eu ! En attente de leur décision...",
-    youMatched: "MATCH !",
-    secure: "SÉCURISER",
-    continue: "CONTINUER",
+    wordMatched: "MATCH ! +1 PT",
+    wordFailed: "RATÉ",
+    nextWord: "SUIVANT",
+    finishTurn: "FINIR LE TOUR",
+    level0: "FACILE",
+    level1: "MOYEN",
+    level2: "DIFFICILE",
     turnOver: "TOUR TERMINÉ",
     rolesSwitched: "Les rôles ont été inversés.",
     activeTeamLabel: "QUI DEVINE",
     nextTurnLabel: "PROCHAINS À DEVINER",
     startTurnBtn: "TIRER UN THÈME",
     score: "Score",
-    tempScore: "Série",
     you: "Vous",
     them: "Eux"
   }
@@ -112,10 +124,14 @@ export default function App() {
   const t = translations[lang];
 
   const [gameState, setGameState] = useState<GameState>('lobby');
-  const [theme, setTheme] = useState(prompts.en[0]);
+  const [theme, setTheme] = useState(prompts.en.easy[0]);
   const [scores, setScores] = useState<Record<string, number>>({});
-  const [tempScore, setTempScore] = useState(0);
   const [activeTeamId, setActiveTeamId] = useState<string>('');
+
+  const [clientId] = useState(() => Math.random().toString(36).substring(2, 10));
+
+  const [turnWordIndex, setTurnWordIndex] = useState(0);
+  const [lastResult, setLastResult] = useState<'match' | 'fail' | null>(null);
 
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
@@ -123,7 +139,10 @@ export default function App() {
     if (!room) return;
 
     const channel = supabase.channel(`room:${room}`, {
-      config: { presence: { key: currentUsername } }
+      config: {
+        presence: { key: clientId },
+        broadcast: { self: false }
+      }
     });
 
     channel
@@ -152,50 +171,57 @@ export default function App() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [room, currentUsername]);
+  }, [room, currentUsername, clientId]);
 
   const processAction = (action: string, data: any) => {
     if (action === 'start_game') {
       setActiveTeamId(data.activeTeamId);
       setView('game');
       setGameState('ready');
-    } else if (action === 'start_turn' || action === 'continue') {
+    } else if (action === 'start_turn') {
+      setTurnWordIndex(0);
       setTheme(data.theme);
       setGameState('playing');
-      if (action === 'start_turn') setTempScore(0);
-    } else if (action === 'match') {
-      setGameState('decision');
-      setTempScore(prev => prev + 100);
-    } else if (action === 'fail') {
-      setGameState('turn_over');
-      setTempScore(0);
-      setActiveTeamId(data.newActiveTeamId);
-    } else if (action === 'secure') {
-      setScores(prev => ({ ...prev, [data.oldActiveTeamId]: (prev[data.oldActiveTeamId] || 0) + data.tempScore }));
-      setTempScore(0);
-      setGameState('turn_over');
-      setActiveTeamId(data.newActiveTeamId);
+    } else if (action === 'match' || action === 'fail') {
+      setLastResult(action);
+      setGameState('word_result');
+      if (action === 'match') {
+        setScores(prev => ({ ...prev, [data.activeTeamId]: (prev[data.activeTeamId] || 0) + 1 }));
+      }
+    } else if (action === 'next_word') {
+      if (turnWordIndex < 2) {
+        setTurnWordIndex(prev => prev + 1);
+        setTheme(data.theme);
+        setGameState('playing');
+      } else {
+        setGameState('turn_over');
+        setActiveTeamId(data.newActiveTeamId);
+      }
     } else if (action === 'lang') {
       setLang(data.lang);
     }
   };
 
-  const getRandomTheme = (currentLang: 'en' | 'es' | 'fr') => {
+  const getRandomThemeByLevel = (currentLang: 'en' | 'es' | 'fr', levelIndex: number) => {
     const list = prompts[currentLang];
-    return list[Math.floor(Math.random() * list.length)];
+    const levelKey = levelIndex === 0 ? 'easy' : levelIndex === 1 ? 'medium' : 'hard';
+    const levelList = list[levelKey];
+    return levelList[Math.floor(Math.random() * levelList.length)];
   };
 
-  const handleAction = (action: 'start_turn' | 'match' | 'fail' | 'secure' | 'continue') => {
+  const handleAction = (action: 'start_turn' | 'match' | 'fail' | 'next_word') => {
     const data: any = {};
 
-    if (action === 'start_turn' || action === 'continue') {
-      data.theme = getRandomTheme(lang);
-    } else if (action === 'fail') {
-      data.newActiveTeamId = teams.find(p => p.id !== activeTeamId)?.id || activeTeamId;
-    } else if (action === 'secure') {
-      data.oldActiveTeamId = activeTeamId;
-      data.tempScore = tempScore;
-      data.newActiveTeamId = teams.find(p => p.id !== activeTeamId)?.id || activeTeamId;
+    if (action === 'start_turn') {
+      data.theme = getRandomThemeByLevel(lang, 0);
+    } else if (action === 'match' || action === 'fail') {
+      data.activeTeamId = activeTeamId;
+    } else if (action === 'next_word') {
+      if (turnWordIndex < 2) {
+        data.theme = getRandomThemeByLevel(lang, turnWordIndex + 1);
+      } else {
+        data.newActiveTeamId = teams.find(p => p.id !== activeTeamId)?.id || activeTeamId;
+      }
     }
 
     // Optimistic update
@@ -210,7 +236,7 @@ export default function App() {
   };
 
   const handleStartGame = () => {
-    const firstActive = teams[0]?.id || currentUsername; // Fallback
+    const firstActive = teams[0]?.id || clientId; // Fallback
     const data = { activeTeamId: firstActive };
 
     processAction('start_game', data);
@@ -236,7 +262,7 @@ export default function App() {
     });
   };
 
-  const myTeamId = teams.find(t => t.username === currentUsername)?.id || currentUsername;
+  const myTeamId = clientId;
   const role = myTeamId === activeTeamId ? 'guesser' : 'reader';
 
   return (
@@ -256,10 +282,11 @@ export default function App() {
       ) : (
         <Game
           theme={theme}
-          gameState={gameState as 'ready' | 'playing' | 'decision' | 'turn_over'}
+          gameState={gameState as 'ready' | 'playing' | 'word_result' | 'turn_over'}
           role={role as 'guesser' | 'reader'}
           scores={scores}
-          tempScore={tempScore}
+          turnWordIndex={turnWordIndex}
+          lastResult={lastResult}
           teams={teams}
           activeTeamId={activeTeamId}
           myTeamId={myTeamId}
