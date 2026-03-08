@@ -1,12 +1,46 @@
-export const prompts = [
-    { id: 1, text: "Un fruit exotique", lang: "FR" },
-    { id: 2, text: "Une couleur fluo", lang: "FR" },
-    { id: 3, text: "Un animal marin", lang: "FR" },
-    { id: 4, text: "Une marque de voiture", lang: "FR" },
-    { id: 5, text: "Un dessert glacé", lang: "FR" },
-    { id: 6, text: "Une pizza sans...", lang: "FR" },
-    { id: 7, text: "Un objet qui vole", lang: "FR" },
-    { id: 8, text: "Un prénom qui commence par Z", lang: "FR" },
-    { id: 9, text: "Un sport extrême", lang: "FR" },
-    { id: 10, text: "Un pays froid", lang: "FR" }
-];
+export const prompts = {
+    en: [
+        "An exotic fruit",
+        "A neon color",
+        "A marine animal",
+        "A car brand",
+        "An ice cream flavor",
+        "A pizza without...",
+        "A flying object",
+        "A name starting with Z",
+        "An extreme sport",
+        "A cold country",
+        "An application on your phone",
+        "A type of shoe",
+        "A famous actor",
+        "A hot beverage",
+        "A musical instrument",
+        "A fast food chain",
+        "A piece of furniture",
+        "Something you find in a bathroom",
+        "A superpower",
+        "Something that is red"
+    ],
+    es: [
+        "Una fruta exótica",
+        "Un color neón",
+        "Un animal marino",
+        "Una marca de auto",
+        "Un sabor de helado",
+        "Una pizza sin...",
+        "Un objeto volador",
+        "Un nombre que empiece con Z",
+        "Un deporte extremo",
+        "Un país frío",
+        "Una aplicación en tu teléfono",
+        "Un tipo de zapato",
+        "Un actor famoso",
+        "Una bebida caliente",
+        "Un instrumento musical",
+        "Una cadena de comida rápida",
+        "Un mueble",
+        "Algo que encuentras en un baño",
+        "Un superpoder",
+        "Algo de color rojo"
+    ]
+};
