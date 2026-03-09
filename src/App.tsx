@@ -189,13 +189,13 @@ export default function App() {
         setScores(prev => ({ ...prev, [data.activeTeamId]: (prev[data.activeTeamId] || 0) + 1 }));
       }
     } else if (action === 'next_word') {
-      if (turnWordIndex < 2) {
-        setTurnWordIndex(prev => prev + 1);
-        setTheme(data.theme);
-        setGameState('playing');
-      } else {
+      if (data.newActiveTeamId) {
         setGameState('turn_over');
         setActiveTeamId(data.newActiveTeamId);
+      } else {
+        setTurnWordIndex(data.turnWordIndex);
+        setTheme(data.theme);
+        setGameState('playing');
       }
     } else if (action === 'lang') {
       setLang(data.lang);
@@ -219,6 +219,7 @@ export default function App() {
     } else if (action === 'next_word') {
       if (turnWordIndex < 2) {
         data.theme = getRandomThemeByLevel(lang, turnWordIndex + 1);
+        data.turnWordIndex = turnWordIndex + 1;
       } else {
         data.newActiveTeamId = teams.find(p => p.id !== activeTeamId)?.id || activeTeamId;
       }
