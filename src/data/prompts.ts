@@ -10,7 +10,9 @@ export const prompts = {
             "It's raining cats and...",
             "A vowel",
             "A direction (North, South...)",
-            "A popular pet (Dog or Cat?)"
+            "A popular pet (Dog or Cat?)",
+            "A month of the year",
+            "Heads or..."
         ],
         medium: [
             "A fruit that is yellow",
@@ -22,7 +24,9 @@ export const prompts = {
             "A hot beverage",
             "A popular video game console",
             "A musical instrument",
-            "A movie genre"
+            "A movie genre",
+            "A breakfast cereal",
+            "A common phobia"
         ],
         hard: [
             "A 90s movie",
@@ -34,7 +38,12 @@ export const prompts = {
             "Something you find in a bathroom",
             "Actions speak louder than...",
             "The early bird catches the...",
-            "Don't judge a book by its..."
+            "Don't judge a book by its...",
+            "A blessing in...",
+            "A piece of cake is something...",
+            "Break a...",
+            "Under the...",
+            "Bite off more than you can..."
         ]
     },
     es: {
@@ -48,7 +57,9 @@ export const prompts = {
             "Perro o...",
             "Una vocal",
             "Una dirección (Norte, Sur...)",
-            "Blanco y..."
+            "Blanco y...",
+            "Un mes del año",
+            "Cara o..."
         ],
         medium: [
             "Una fruta que sea amarilla",
@@ -60,7 +71,9 @@ export const prompts = {
             "Una bebida caliente",
             "Una consola de videojuegos",
             "Un instrumento musical",
-            "Un género de película"
+            "Un género de película",
+            "Un tipo de taco",
+            "Algo picante"
         ],
         hard: [
             "Una película de los 90s",
@@ -72,7 +85,12 @@ export const prompts = {
             "Algo que encuentras en un baño",
             "Camarón que se duerme se lo lleva la...",
             "Aunque la mona se vista de seda, mona se...",
-            "A caballo regalado no se le miran los..."
+            "A caballo regalado no se le miran los...",
+            "Echarle mucha crema a sus...",
+            "Mejor que sobre y no que...",
+            "No mames, ese wey está...",
+            "Dando y dando, pajarito...",
+            "A falta de pan, tortillas..."
         ]
     },
     fr: {
@@ -86,7 +104,9 @@ export const prompts = {
             "Chien ou...",
             "Une voyelle",
             "Une direction (Nord, Sud...)",
-            "Noir et..."
+            "Noir et...",
+            "Pile ou...",
+            "Un mois de l'année"
         ],
         medium: [
             "Un fruit jaune",
@@ -98,7 +118,9 @@ export const prompts = {
             "Une boisson chaude",
             "Une console de jeux vidéo",
             "Un instrument de musique",
-            "Un genre de film"
+            "Un genre de film",
+            "Un fromage Français",
+            "Un personnage Disney"
         ],
         hard: [
             "Un film des années 90",
@@ -110,7 +132,12 @@ export const prompts = {
             "Un objet dans une salle de bain",
             "C'est la goutte d'eau qui fait déborder le...",
             "Quand les poules auront des...",
-            "Chercher midi à quatorze..."
+            "Chercher midi à quatorze...",
+            "Tomber dans les...",
+            "Avoir un poil dans la...",
+            "Mettre les pieds dans le...",
+            "Il pleut des...",
+            "S'occuper de ses..."
         ]
     }
 };
